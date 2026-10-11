@@ -1,510 +1,366 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExifZero — Local Metadata Stripper & Batch Renamer</title>
-    <style>
-        :root {
-            --bg-primary: #090a0f;
-            --bg-secondary: #13151f;
-            --bg-tertiary: #1c2030;
-            --accent: #7c3aed;
-            --accent-hover: #6d28d9;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border: #2d3748;
-            --success: #10b981;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-icon {
-            background: var(--accent);
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .badges {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            padding: 0.35rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .badge.active {
-            color: var(--success);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .donate-btn {
-            background: var(--bg-tertiary);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.4rem 0.85rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .donate-btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
-        main {
-            flex: 1;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 2rem;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 900px) {
-            main {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .panel {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            height: fit-content;
-        }
-
-        .panel h2 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        label {
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        input[type="text"] {
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.75rem;
-            color: var(--text-main);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
-        }
-
-        .dropzone {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            text-align: center;
-            background: var(--bg-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            min-height: 250px;
-        }
-
-        .dropzone:hover, .dropzone.dragover {
-            border-color: var(--accent);
-            background: var(--bg-tertiary);
-        }
-
-        .dropzone-icon {
-            font-size: 2.5rem;
-            color: var(--text-muted);
-        }
-
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .queue-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .queue-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .file-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .file-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .file-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            overflow: hidden;
-        }
-
-        .file-name {
-            font-size: 0.9rem;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .file-status {
-            font-size: 0.75rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            background: var(--bg-tertiary);
-            color: var(--text-muted);
-        }
-
-        .file-status.ready { color: var(--success); background: rgba(16, 185, 129, 0.1); }
-
-        .actions-row {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExifZero — Local Metadata Stripper & Batch Renamer</title>
+  <meta name="description" content="Local client-side image metadata stripper and batch renamer. Remove EXIF tags and GPS data with zero cloud uploads.">
+  <meta property="og:title" content="ExifZero — Local Metadata Stripper & Batch Renamer">
+  <meta property="og:description" content="Local client-side image metadata stripper and batch renamer. Remove EXIF tags and GPS data with zero cloud uploads.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
-    <header>
-        <div class="logo-area">
-            <div class="logo-icon">🛡️</div>
-            <h1>ExifZero <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Local Metadata Stripper</span></h1>
+  <!-- Top Navigation Bar (Strict 3-Zone Contract) -->
+  <header class="app-header">
+    <!-- Zone 1: Single Wordmark Element -->
+    <a href="#" class="header-brand">
+      <div class="brand-icon">🛡️</div>
+      <span class="brand-wordmark">ExifZero Enterprise</span>
+    </a>
+
+    <!-- Zone 2: Clean 1-Line Navigation Links -->
+    <nav class="header-nav">
+      <a href="#workspace" class="header-nav-link active">Asset Workspace</a>
+      <a href="#inspector" class="header-nav-link">Forensic Inspector</a>
+      <button id="privacySpecsLink" class="header-nav-link">Privacy Guarantee</button>
+    </nav>
+
+    <!-- Zone 3: Primary Action & Theme Toggle -->
+    <div class="header-actions">
+      <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle theme">☀️</button>
+      <button id="downloadZipBtn" class="btn btn-primary" disabled>
+        Download Batch (ZIP)
+      </button>
+    </div>
+  </header>
+
+  <!-- Security & Privacy Trust Banner -->
+  <div class="trust-banner">
+    <div class="trust-specs">
+      <div class="trust-spec-item">
+        <span class="trust-spec-icon">✓</span>
+        <span>100% Client-Side Memory Isolation</span>
+      </div>
+      <div class="trust-spec-item">
+        <span class="trust-spec-icon">✓</span>
+        <span>Zero Network Transmissions / No Cloud Storage</span>
+      </div>
+      <div class="trust-spec-item">
+        <span class="trust-spec-icon">✓</span>
+        <span>Offline Air-Gapped Ready</span>
+      </div>
+    </div>
+    <div class="trust-spec-item">
+      <span>Free Enterprise Privacy Tool</span>
+    </div>
+  </div>
+
+  <!-- Main Workspace Canvas -->
+  <main class="workspace" id="workspace">
+
+    <!-- Step-by-Step Guidance Banner (Laymen Language) -->
+    <div class="guidance-banner">
+      <div class="guidance-header">
+        <div class="guidance-title">
+          <span>🛡️</span>
+          <span>How to Clean & Protect Your Photos in 3 Simple Steps</span>
         </div>
-        <div class="badges">
-            <div class="badge active">✓ 100% Client-Side</div>
-            <div class="badge active">✓ Zero Cloud Uploads</div>
-            <div class="badge active">✓ Offline Ready</div>
+        <span class="file-row-subtext">No technical skills needed · 100% Free & Private</span>
+      </div>
+      <div class="guidance-grid">
+        <div class="guidance-item">
+          <div class="guidance-icon-circle">1</div>
+          <div class="guidance-item-content">
+            <div class="guidance-item-heading">Add Your Photos</div>
+            <div class="guidance-item-text">
+              Drag and drop any photos into the box below or click "Add Photos". Supports JPG, PNG, WebP, and iPhone HEIC.
+            </div>
+          </div>
         </div>
-        <a href="https://cash.app/$static9072" target="_blank" class="donate-btn">Donate: $static9072</a>
-    </header>
 
-    <main>
-        <!-- Settings Panel -->
-        <div class="panel">
-            <h2>1. Configuration</h2>
-            
-            <div class="form-group">
-                <label for="namePattern">Batch Rename Prefix</label>
-                <input type="text" id="namePattern" value="clean_image" placeholder="e.g. vacation_shot">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Files will be named prefix_01, prefix_02, etc.</span>
+        <div class="guidance-item">
+          <div class="guidance-icon-circle">2</div>
+          <div class="guidance-item-content">
+            <div class="guidance-item-heading">Wipe Hidden Data</div>
+            <div class="guidance-item-text">
+              Click the green "Clean All Photos" button. Your hidden GPS home address, camera serials, and dates are wiped in 1 second.
             </div>
+          </div>
+        </div>
 
-            <div class="form-group">
-                <label>Privacy Guarantee</label>
-                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
-                    Images are processed entirely inside your browser memory using HTML5 Canvas rendering. EXIF tags, GPS coordinate metadata, and camera fingerprints are completely wiped out before export.
-                </p>
+        <div class="guidance-item">
+          <div class="guidance-icon-circle">3</div>
+          <div class="guidance-item-content">
+            <div class="guidance-item-heading">Download & Share</div>
+            <div class="guidance-item-text">
+              Save your cleaned photos individually or download as a single ZIP folder. Safe to share with friends, clients, or on social media.
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Left Column: Simplified 3-Step Action Center -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Action Center</div>
+      </div>
+      <div class="panel-body">
+        
+        <div class="workflow-steps">
+          
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-number">1</div>
+              <div class="step-title">Select Photos</div>
+            </div>
+            <div class="step-description">
+              Choose the pictures you want to inspect and clean. Your files stay safely in your browser.
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fileInput').click()" style="flex: 1;">
+                Choose Files
+              </button>
+              <button id="loadSampleBtn" class="btn btn-secondary btn-sm" style="flex: 1;" title="Test without uploading">
+                Try Sample Photo
+              </button>
+            </div>
+          </div>
 
-            <button id="processBtn" class="btn" style="width: 100%; margin-top: auto;" disabled>
-                Process & Strip Metadata
+          <!-- Step 2 -->
+          <div class="step-card active">
+            <div class="step-card-header">
+              <div class="step-number">2</div>
+              <div class="step-title">Clean Hidden Data</div>
+            </div>
+            <div class="step-description">
+              Removes home GPS coordinates, device serial numbers, and camera signatures.
+            </div>
+            <button id="sanitizeAllBtn" class="btn btn-primary" style="width: 100%;" disabled>
+              Clean All Photos
             </button>
+            <div class="progress-bar-container">
+              <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-card-header">
+              <div class="step-number">3</div>
+              <div class="step-title">Download Clean Files</div>
+            </div>
+            <div class="step-description">
+              Get your privacy-safe images. Download one-by-one or grab everything in one ZIP.
+            </div>
+            <button id="downloadZipPanelBtn" class="btn btn-secondary btn-sm" style="width: 100%;" disabled>
+              Download Cleaned ZIP
+            </button>
+          </div>
+
         </div>
 
-        <!-- Dropzone / Queue Panel -->
-        <div class="panel" style="flex: 1;">
-            <h2>2. Image Queue</h2>
-            
-            <div id="dropzone" class="dropzone">
-                <div class="dropzone-icon">📁</div>
-                <div>
-                    <p style="font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem;">Drop Your Photos Here</p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">Supports JPG, PNG, WebP batch processing</p>
-                </div>
-                <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Select Photos</button>
-                <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp" style="display: none;">
+        <!-- Expandable Optional Settings -->
+        <div style="margin-top: 0.25rem;">
+          <div id="advancedSettingsToggle" class="advanced-settings-toggle">
+            <span>⚙️ Optional Settings (Naming & Formats)</span>
+            <span id="settingsArrow">▼</span>
+          </div>
+          <div id="advancedSettingsContent" class="advanced-settings-content">
+            <div class="form-group">
+              <label class="form-label" for="renamePatternSelect">File Naming</label>
+              <select id="renamePatternSelect" class="form-select">
+                <option value="prefix_index">Prefix + Number (e.g. photo_01)</option>
+                <option value="date_prefix_index">Date + Prefix (e.g. 2026-10-11_photo_01)</option>
+                <option value="original_sanitized">Original Name + _clean</option>
+              </select>
             </div>
 
-            <div id="queueArea" class="queue-container" style="display: none;">
-                <div class="queue-header">
-                    <span id="queueCount" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">0 files loaded</span>
-                    <button class="btn btn-secondary" style="padding: 0.3rem 0.7rem; font-size: 0.75rem;" onclick="clearQueue()">Clear All</button>
-                </div>
-                <div id="fileList" class="file-list"></div>
-                
-                <div class="actions-row">
-                    <button id="downloadAllBtn" class="btn" style="flex: 1; display: none;">Download Cleaned Batch (ZIP)</button>
-                </div>
+            <div class="form-group">
+              <label class="form-label" for="prefixInput">Name Prefix</label>
+              <input type="text" id="prefixInput" class="form-input" value="clean_photo" placeholder="e.g. holiday">
             </div>
+
+            <div class="form-group">
+              <label class="form-label" for="outputFormatSelect">File Format</label>
+              <select id="outputFormatSelect" class="form-select">
+                <option value="original">Keep Original Format</option>
+                <option value="jpeg">Convert to JPEG</option>
+                <option value="png">Convert to Lossless PNG</option>
+                <option value="webp">Convert to WebP</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <span>Image Quality</span>
+                <span id="qualityValue" class="tabular-nums" style="color: var(--accent-primary);">95%</span>
+              </div>
+              <div class="form-range-container">
+                <input type="range" id="qualityRange" class="form-range" min="60" max="100" value="95">
+              </div>
+            </div>
+          </div>
         </div>
-    </main>
 
-    <!-- Include JSZip for client-side batch archiving -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script>
-        let fileQueue = [];
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('fileInput');
-        const queueArea = document.getElementById('queueArea');
-        const fileList = document.getElementById('fileList');
-        const queueCount = document.getElementById('queueCount');
-        const processBtn = document.getElementById('processBtn');
-        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        <!-- Plain English Education Box -->
+        <div class="explainer-box">
+          <div class="explainer-title">💡 Why should you clean your photos?</div>
+          <div class="explainer-text">
+            Every photo taken on modern smartphones contains invisible "metadata" tags. These tags record your exact GPS home location, camera model, and date. Anyone downloading your picture can see where you were. Cleaning them keeps your identity and location completely private.
+          </div>
+        </div>
 
-        // Drag and drop handlers
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropzone.classList.add('dragover');
-            }, false);
-        });
+      </div>
+    </div>
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropzone.classList.remove('dragover');
-            }, false);
-        });
+    <!-- Right Column: Queue & Forensic Inspector -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Ingestion & Asset Queue Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>Asset Queue</span>
+            <span id="queueCount" class="file-row-subtext" style="font-weight: normal;">0 files loaded</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fileInput').click()">Add Files</button>
+            <button id="clearAllBtn" class="btn btn-danger-outline btn-sm">Clear Queue</button>
+            <input type="file" id="fileInput" multiple accept="image/*,.heic,.avif,.tiff,.tif,.gif" style="display: none;">
+          </div>
+        </div>
+        
+        <div class="panel-body">
+          
+          <!-- Dropzone -->
+          <div id="dropzone" class="dropzone">
+            <div class="dropzone-icon">📥</div>
+            <div>
+              <div class="dropzone-heading">Drop Images Here to Sanitize</div>
+              <div class="dropzone-subtext">Supports JPG, PNG, WebP, TIFF, GIF, HEIC, and AVIF</div>
+            </div>
+            <div class="dropzone-cta-row">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">Select Local Files</button>
+            </div>
+          </div>
 
-        dropzone.addEventListener('drop', (e) => {
-            handleFiles(e.dataTransfer.files);
-        });
+          <!-- Queue Table -->
+          <div id="queueArea" style="display: none; flex-direction: column; gap: 1rem;">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 48px;">Thumb</th>
+                    <th>Filename</th>
+                    <th>Size</th>
+                    <th>Metadata</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="fileTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
+        </div>
+      </div>
 
-        function handleFiles(files) {
-            for (let file of files) {
-                if (!file.type.match('image.*')) continue;
-                fileQueue.push({
-                    file: file,
-                    name: file.name,
-                    size: formatBytes(file.size),
-                    status: 'Ready'
-                });
-            }
-            updateQueueUI();
-        }
+      <!-- Forensic Metadata Inspector Panel -->
+      <div class="panel" id="inspector">
+        <div class="panel-header">
+          <div class="panel-title">Forensic Metadata Inspector</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="downloadSingleBtn" class="btn btn-secondary btn-sm" style="display: none;">
+              Download Sanitized File
+            </button>
+          </div>
+        </div>
+        
+        <div class="panel-body">
+          
+          <div id="inspectorEmpty" style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+            Select an image in the queue to inspect its complete EXIF tag structure, camera optics, GPS coordinates, and view before-and-after sanitization proofs.
+          </div>
 
-        function formatBytes(bytes, decimals = 2) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-        }
-
-        function updateQueueUI() {
-            if (fileQueue.length > 0) {
-                dropzone.style.display = 'none';
-                queueArea.style.display = 'flex';
-                queueCount.innerText = `${fileQueue.length} file(s) loaded`;
-                processBtn.disabled = false;
-            } else {
-                dropzone.style.display = 'flex';
-                queueArea.style.display = 'none';
-                processBtn.disabled = true;
-            }
-
-            fileList.innerHTML = '';
-            fileQueue.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'file-item';
-                div.innerHTML = `
-                    <div class="file-info">
-                        <span class="file-name">${item.name}</span>
-                        <span class="file-meta">${item.size}</span>
-                    </div>
-                    <span class="file-status ${item.status === 'Cleaned' ? 'ready' : ''}">${item.status}</span>
-                `;
-                fileList.appendChild(div);
-            });
-        }
-
-        function clearQueue() {
-            fileQueue = [];
-            updateQueueUI();
-            downloadAllBtn.style.display = 'none';
-        }
-
-        processBtn.addEventListener('click', async () => {
-            processBtn.disabled = true;
-            processBtn.innerText = 'Stripping Metadata...';
+          <div id="inspectorContent" class="inspector-panel" style="display: none;">
             
-            const prefix = document.getElementById('namePattern').value || 'clean';
-            const zip = new JSZip();
-            let processedCount = 0;
+            <!-- Segmented Inspector Tabs -->
+            <div class="segmented-tabs">
+              <button class="segmented-tab active" data-tab="overview">Overview & Hardware</button>
+              <button class="segmented-tab" data-tab="diff">Before vs After Diff</button>
+              <button class="segmented-tab" data-tab="raw">Raw Tag Forensics</button>
+            </div>
 
-            for (let i = 0; i < fileQueue.length; i++) {
-                let item = fileQueue[i];
-                let blob = await stripExifViaCanvas(item.file);
-                let ext = item.file.type === 'image/png' ? 'png' : 'jpg';
-                let padIndex = String(i + 1).padStart(2, '0');
-                let newFileName = `${prefix}_${padIndex}.${ext}`;
+            <!-- Tab 1: Overview -->
+            <div id="tabContentOverview" style="display: flex; flex-direction: column; gap: 1rem;"></div>
 
-                zip.file(newFileName, blob);
-                item.status = 'Cleaned';
-                processedCount++;
-                updateQueueUI();
-            }
+            <!-- Tab 2: Before vs After Diff -->
+            <div id="tabContentDiff" style="display: none; flex-direction: column; gap: 1rem;"></div>
 
-            const content = await zip.generateAsync({ type: 'blob' });
-            const zipUrl = URL.createObjectURL(content);
+            <!-- Tab 3: Raw Tags -->
+            <div id="tabContentRaw" style="display: none; flex-direction: column; gap: 1rem;"></div>
 
-            downloadAllBtn.style.display = 'inline-flex';
-            downloadAllBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = zipUrl;
-                a.download = 'cleaned_photos.zip';
-                a.click();
-            };
+          </div>
 
-            processBtn.innerText = 'Process Complete ✓';
-        });
+        </div>
+      </div>
 
-        function stripExifViaCanvas(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        
-                        let mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                        canvas.toBlob((blob) => {
-                            resolve(blob);
-                        }, mime, 0.92);
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-    </script>
+    </div>
+
+  </main>
+
+  <!-- Privacy Guarantee Modal -->
+  <div id="privacyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Enterprise Privacy Guarantee & Architecture</div>
+        <button id="closePrivacyModal" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.875rem; line-height: 1.6; color: var(--text-secondary);">
+        <p>
+          <strong>1. Zero Cloud Uploads:</strong> Every byte of your photos is processed strictly inside your device's browser memory (HTML5 Canvas 2D engine). At no point are images, filenames, or metadata transmitted over the network.
+        </p>
+        <p>
+          <strong>2. Mathematical EXIF Destruction:</strong> Rather than attempting to patch or mask headers, ExifZero decodes raw image pixels into memory and reconstructs a completely fresh graphic file with pristine binary headers, eliminating all APP1/EXIF segments, GPS markers, IPTC records, and camera serial numbers.
+        </p>
+        <p>
+          <strong>3. Air-Gapped Operation:</strong> You can disconnect your device from the internet or run this workstation on private corporate intranets. The application functions 100% offline.
+        </p>
+        <p>
+          <strong>4. No Cookies or Telemetry:</strong> No tracking pixels, user session cookies, or telemetry analytics are deployed in this software.
+        </p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('privacyModal').style.display='none'">
+          Understood & Verified
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clean Corporate Footer -->
+  <footer class="app-footer">
+    <div>
+      <span>ExifZero Enterprise · Air-Gapped Client-Side Digital Asset Sanitization</span>
+    </div>
+    <div class="footer-links">
+      <span class="footer-link" onclick="document.getElementById('privacyModal').style.display='flex'">Privacy Specifications</span>
+      <a href="https://cash.app/$static9072" target="_blank" rel="noopener noreferrer" class="footer-link">Support Project</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>

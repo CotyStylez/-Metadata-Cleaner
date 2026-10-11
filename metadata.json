@@ -1,0 +1,7 @@
+{
+  "name": "ExifZero — Local Metadata Stripper & Batch Renamer",
+  "description": "Local client-side image metadata stripper and batch renamer. Remove EXIF tags and GPS data with zero cloud uploads.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
